@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import uuid
+import time
 from sets import Set
 from datetime import datetime
 
@@ -16,6 +17,7 @@ class Tweet(DocType):
 	retweet = Integer()
 	date = Date()
 	likes = Integer()
+	last_update = Date()
 
 	class Meta:
 		index = 'simbiose'
@@ -24,8 +26,9 @@ def main():
 	#conecta no cassandra e no elastic search
 	cassandra = init_cassandra("/home/vanz/repos/cassandra_elasticsearch/resource")
 	es = init_elasticsearch()
+	wait_time = 1000
 	#faz a sincronia
-	#sync(cassandra, es)
+	sync(cassandra, es)
 
 def init_cassandra(resource_dir, seeds = ["127.0.0.1"]):
 	"""
@@ -59,15 +62,17 @@ def sync(cassandra, es):
 	es: conexão com o elastic search
 	"""
 	#pega todos os registros do cassandra
-	registros = cassandra.execute("SELECT id, user, content, retweet, date, likes FROM tweets")
+	registros = cassandra.execute("SELECT id, user, content, retweet, date, likes, last_update FROM tweets")
 	ids = []
 	for registro in registros:
 		#guarda id para verificar depois com o es
-		ids.append(registro.id)
+		ids.append(str(registro.id))
 		# verifica se esse id ja existe no elastic search
 		if es.exists(index='simbiose', doc_type='tweet', id=registro.id):
-			syncWithEs(registro, es)
+			#registro ja existe no es, então precisa ser sincronizado
+			syncRecord(registro, cassandra)
 		else:
+			#registro não existe no es. Precisa ser inserido
 			insertIntoEs(registro, es)
 	# depois que sincronizou todos os registros existentes no cassandra no es, traz o que tem de
 	# novo no es para o cassandra
@@ -76,8 +81,18 @@ def sync(cassandra, es):
 	for record in response:
 		insertIntoCassandra(record, cassandra)
 
-def syncWithEs(registro, es):
-	pass
+def syncRecord(registro, cassandra):
+	es_tweet = Tweet.get(id=str(registro.id))
+	if es_tweet.last_update < registro.last_update:
+		tweet = Tweet(user=registro.user, content=registro.content, retweet=registro.retweet, date=registro.date, likes=registro.likes, last_update=registro.last_update)
+		tweet.meta.id=registro.id
+		tweet.save()
+	else:
+		cassandra.execute("""
+			UPDATE tweets SET user = %(user)s, content = %(content)s, retweet = %(retweet)s, date = %(date)s, likes = %(likes)s, last_update = %(last_update)s
+			WHERE id =  %(id)s
+		""",
+		{'id' : uuid.UUID(es_tweet.meta.id), 'user' : es_tweet.user, 'content' : es_tweet.content, 'retweet' : es_tweet.retweet, 'date' : es_tweet.date, 'likes' : es_tweet.likes, 'last_update' : es_tweet.last_update})
 
 def insertIntoEs(registro, es):
 	"""
@@ -85,7 +100,7 @@ def insertIntoEs(registro, es):
 	registro: registro recuperado do cassandra
 	es: conexão com o elastic search
 	"""
-	tweet = Tweet(user=registro.user, content=registro.content, retweet=registro.retweet, date=registro.date, likes=registro.likes)
+	tweet = Tweet(user=registro.user, content=registro.content, retweet=registro.retweet, date=registro.date, likes=registro.likes, last_update=registro.last_update)
 	tweet.meta.id=registro.id
 	tweet.save()
 
@@ -96,10 +111,10 @@ def insertIntoCassandra(record, cassandra):
 	cassandra: conexão com o cassandra
 	"""
 	cassandra.execute("""
-		INSERT INTO tweets (id, user, content, retweet, date, likes)
-		VALUES (%(id)s, %(user)s, %(content)s, %(retweet)s, %(date)s, %(likes)s)
+		INSERT INTO tweets (id, user, content, retweet, date, likes, last_update)
+		VALUES (%(id)s, %(user)s, %(content)s, %(retweet)s, %(date)s, %(likes)s, %(last_update)s)
 		""",
-		{'id' : record.id, 'user' : record.user, 'content' : record.content, 'retweet' : record.retweet, 'date' : record.date, 'likes' : record.likes})
+		{'id' : uuid.UUID(record.meta.id), 'user' : record.user, 'content' : record.content, 'retweet' : record.retweet, 'date' : record.date, 'likes' : record.likes, 'last_update' : record.last_update})
 
 if __name__ == "__main__":
 	main()
