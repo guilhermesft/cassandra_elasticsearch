@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import sys
+import getopt
 import uuid
 import time
 from sets import Set
@@ -22,13 +23,14 @@ class Tweet(DocType):
 	class Meta:
 		index = 'simbiose'
 
-def main():
+def main(wait_time):
 	#conecta no cassandra e no elastic search
 	cassandra = init_cassandra("/home/vanz/repos/cassandra_elasticsearch/resource")
 	es = init_elasticsearch()
-	wait_time = 1000
-	#faz a sincronia
-	sync(cassandra, es)
+	while(True):
+		#faz a sincronia
+		sync(cassandra, es)
+		time.sleep(wait_time)
 
 def init_cassandra(resource_dir, seeds = ["127.0.0.1"]):
 	"""
@@ -117,4 +119,17 @@ def insertIntoCassandra(record, cassandra):
 		{'id' : uuid.UUID(record.meta.id), 'user' : record.user, 'content' : record.content, 'retweet' : record.retweet, 'date' : record.date, 'likes' : record.likes, 'last_update' : record.last_update})
 
 if __name__ == "__main__":
-	main()
+#valida se foi passado o parametro de tempo
+	try:
+		options, args = getopt.getopt(sys.argv[1:], 't:')
+		if len(options) > 0:
+			t = int(options[0][1])
+			if t > 0:
+				main(t)
+		else:
+			print "Infome o intervalo de tempo da sincronização -t <time>"
+	except Exception as err:
+		import traceback
+		traceback.print_exc()
+		sys.exit(1)
+	sys.exit(0)
