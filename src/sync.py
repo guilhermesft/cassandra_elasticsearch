@@ -76,6 +76,7 @@ def sync(cassandra, es):
 	#pega todos os registros do cassandra
 	registros = cassandra.execute("SELECT id, user, content, retweet, date, likes, last_update FROM tweets")
 	ids = []
+	print "Registro no cassandra = " + str(len(registros))
 	for registro in registros:
 		#guarda id para verificar depois com o es
 		ids.append(str(registro.id))
@@ -88,9 +89,10 @@ def sync(cassandra, es):
 			insertIntoEs(registro, es)
 	# depois que sincronizou todos os registros existentes no cassandra no es, traz o que tem de
 	# novo no es para o cassandra
-	s = Tweet.search().query(~Q("ids", type="tweet", values=ids))
+	s = Tweet.search().query(~Q("ids", type="tweet", values=ids)).extra(from_=0, size=9999)
 	response = s.execute()
 	for record in response:
+		print "registro vindo do es= " + str(record)
 		insertIntoCassandra(record, cassandra)
 
 def syncRecord(registro, cassandra):
