@@ -52,7 +52,7 @@ Run:
 
 Para facilicar a execução foi criado um shell script no qual passa todos os parametros necessários para execução ( com valores default ). Que são:
 
--t: tempo entre cada sincronização
--r: diretório de resources da aplicação. Nesse diretório deve conter o .cql responsavel em criar o keyspace e a column family
--c: host para conectar com o Cassandra
--e: host de conexão com o Elasticsearch
+* -t: tempo entre cada sincronização
+* -r: diretório de resources da aplicação. Nesse diretório deve conter o .cql responsavel em criar o keyspace e a column family
+* -c: host para conectar com o Cassandra
+* -e: host de conexão com o Elasticsearch
