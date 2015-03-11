@@ -71,6 +71,6 @@ Para facilicar a execução foi criado um shell script no qual passa todos os pa
 Dependências:
 ============
 
-[elasticsearch-dsl-py](https://github.com/elastic/elasticsearch-dsl-py)
-[Cassandra python-driver](https://github.com/datastax/python-driver)
-[elasticsearch-py](https://github.com/elastic/elasticsearch-py)
+* [elasticsearch-dsl-py](https://github.com/elastic/elasticsearch-dsl-py)
+* [Cassandra python-driver](https://github.com/datastax/python-driver)
+* [elasticsearch-py](https://github.com/elastic/elasticsearch-py)
