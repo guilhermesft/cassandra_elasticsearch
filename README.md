@@ -48,9 +48,9 @@ src: diretório com os fontes da aplicação
 Fontes:
 ======
 
-sync.py: Código que faz a sincronia entre o Cassandra e o Elasticsearch
-insert.py: Código que insere novo registro no Cassandra e no Elasticsearch. Foi criado para testes
-update.py: Código que altera registros no Cassandra e no Elasticsearch. Foi criado para testes
+* sync.py: Código que faz a sincronia entre o Cassandra e o Elasticsearch
+* insert.py: Código que insere novo registro no Cassandra e no Elasticsearch. Foi criado para testes
+* update.py: Código que altera registros no Cassandra. Foi criado para testes
 
 
 Considerações:
