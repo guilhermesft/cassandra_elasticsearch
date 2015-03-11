@@ -18,13 +18,16 @@ Column family e doc_type:
 
 Para utilizar na aplicação foi criado uma column family que representa tweets:
 
+```
  id                                   | content       | date                     | last_update              | likes | retweet | user
  --------------------------------------+---------------+--------------------------+--------------------------+-------+---------+-------------
   a9c9bc80-c6d9-11e4-8211-50b7c366e428 | content_48017 | 2015-03-09 21:58:08-0300 | 2015-03-09 21:58:08-0300 |     1 |       1 | user_manual
 
+```
 
 E o seu doc_type correspondente:
 
+```
 {
 	"_index" : "simbiose",
 	"_type" : "tweet",
@@ -33,6 +36,7 @@ E o seu doc_type correspondente:
 	"found" : true,
 	"_source":{"last_update": "2015-03-10T00:58:08.673000", "content": "content_48017", "user": "user_manual", "date": "2015-03-10T00:58:08.673000", "retweet": 1, "likes": 1}
 }
+```
 
 Diretórios
 =========
