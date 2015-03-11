@@ -67,3 +67,10 @@ Para facilicar a execução foi criado um shell script no qual passa todos os pa
 * -r: diretório de resources da aplicação. Nesse diretório deve conter o .cql responsavel em criar o keyspace e a column family
 * -c: host para conectar com o Cassandra
 * -e: host de conexão com o Elasticsearch
+
+Dependências:
+============
+
+[elasticsearch-dsl-py](https://github.com/elastic/elasticsearch-dsl-py)
+[Cassandra python-driver](https://github.com/datastax/python-driver)
+[elasticsearch-py](https://github.com/elastic/elasticsearch-py)
